@@ -43,21 +43,14 @@ echo is a file
 
 set FILE_INPUT="%~1"
 set FILE_BACKUP="%~1_backup"
-
-for /f "tokens=*" %%a in ('call otfinfo\otfinfo.exe --quiet --family %FILE_INPUT% 2^>^&1') do (set FONT_FAMILY=%%a)
-
-
-
-echo now converting [%FONT_FAMILY%]...
-echo.
+set FILE_TTF="%~dpn1.ttf"
 
 call copy /b /y %FILE_INPUT% %FILE_BACKUP%  2>nul >nul
 
 @echo on
 call fontforge.bat -lang "ff" -c "Open($1); Generate($1:r + \".eot\"); Generate($1:r + \".svg\"); Generate($1:r + \".otf\"); Generate($1:r + \".ttf\"); Generate($1:r + \".woff\");" %FILE_INPUT%
 
-echo.
-call woff2\woff2_compress.exe %FILE_INPUT%
+call woff2\woff2_compress.exe %FILE_TTF%
 
 @echo off
 call copy /b /y %FILE_BACKUP% %FILE_INPUT%  2>nul >nul
@@ -65,6 +58,7 @@ del /f /q %FILE_BACKUP%                     2>nul >nul
 echo.
 echo.
 
+for /f "tokens=*" %%a in ('call otfinfo\otfinfo.exe --quiet --family %FILE_TTF% 2^>^&1') do (set FONT_FAMILY=%%a)
 
 echo @font-face{                                                                            >%~n1.css
 echo  font-weight:400; font-style:normal; font-display:swap; font-family:'%FONT_FAMILY%';  >>%~n1.css
@@ -86,6 +80,9 @@ echo   font-family: '%FONT_FAMILY%', sans-serif;                                
 echo }                                                                                     >>%~n1.css
 echo.                                                                                      >>%~n1.css
 
+
+echo Done [%FONT_FAMILY%].
+echo.
 ::--------------------------------------------------------------------------------
 
 :NEXT
